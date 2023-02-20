@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "quiz-monitor"
+version = "0.1.0"
+description = ""
+authors = ["AprilNEA <github@sku.moe>"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aiohttp = "^3.8.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

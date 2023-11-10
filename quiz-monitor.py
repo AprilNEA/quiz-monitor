@@ -4,7 +4,7 @@ from getpass import getpass
 from datetime import datetime
 from typing import Tuple, Union, Optional
 from aiohttp.client_exceptions import ClientError, ClientConnectorCertificateError
-from time import sleep
+from time import sleep, localtime, strftime
 from prettytable import PrettyTable
 
 USER_AGENT = "Mozilla/5.0 (Linux; Android 12; SM-S906N Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.119 Mobile Safari/537.36"
@@ -167,7 +167,11 @@ class CORE:
         tab = PrettyTable(['ID', 'Name', 'URL', 'DDL'])
         for event in events:
             if event["modulename"] == "quiz":
-                tab.add_row([event["id"], event["name"].encode().decode("utf-8"), event["url"], event["timeusermidnight"]])
+                tab.add_row([event["id"], 
+                    event["name"].encode().decode("utf-8"), 
+                    event["url"], 
+                    strftime('%Y-%m-%d %H:%M', localtime(int(event["timeusermidnight"])))]
+                )
 
         print(tab)
 

@@ -4,10 +4,12 @@ from getpass import getpass
 from datetime import datetime
 from typing import Tuple, Union, Optional
 from aiohttp.client_exceptions import ClientError, ClientConnectorCertificateError
+from time import sleep
+from prettytable import PrettyTable
 
 USER_AGENT = "Mozilla/5.0 (Linux; Android 12; SM-S906N Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.119 Mobile Safari/537.36"
 
-sesskeyPattern = re.compile(r'core.xjtlu.edu.cn","sesskey":"(\w+)","sessiont')
+sesskeyPattern = re.compile(r'"sesskey":"(\w+)","sessiontimeout"')
 csrfPattern = re.compile(r'<input type="hidden" name="csrfToken" value="(\d+)"></input>')
 executionPattern = re.compile(r'<input type="hidden" name="execution" value="(\w+)"/>')
 ltPattern = re.compile(r'<input type="hidden" name="lt" value="(\S+)"/>')
@@ -161,16 +163,13 @@ class CORE:
             if not datas["error"]:
                 pass
             events = datas["data"]["events"]
+
+        tab = PrettyTable(['ID', 'Name', 'URL', 'DDL'])
         for event in events:
             if event["modulename"] == "quiz":
-                data = {
-                    "id": event["id"],
-                    "name": event["name"].encode().decode("utf-8"),
-                    "link": event["url"],
-                    "ddl": event["timeusermidnight"]
-                }
+                tab.add_row([event["id"], event["name"].encode().decode("utf-8"), event["url"], event["timeusermidnight"]])
 
-                print(data)
+        print(tab)
 
 
 async def main():
@@ -182,7 +181,9 @@ async def main():
             p = getpass("Please enter your password:")
             app = CORE(session, u)
             await app.auth(p)
-            await app.get_timeline()
+            while True:
+                await app.get_timeline()
+                sleep(30)
 
     except KeyboardInterrupt:
         print("\n")

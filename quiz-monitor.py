@@ -1,5 +1,6 @@
 import re
 import aiohttp
+import os
 from getpass import getpass
 from datetime import datetime
 from typing import Tuple, Union, Optional
@@ -21,6 +22,7 @@ SAMLRequestPattern = re.compile(r"""<meta http-equiv="refresh" content="0;URL='(
 relayStatePattern = re.compile(r'<input type="hidden" name="RelayState" value="(\S+)"/>')
 SAMLResponsePattern = re.compile(r'<input type="hidden" name="SAMLResponse" value="(\S+)"/>')
 
+history={'modifier': 'MalachiteN', 'Email': 'marisamalachite@gmail.com', 'type': 'placeholder'}
 
 class CORE:
     def __init__(self,
@@ -146,6 +148,7 @@ class CORE:
             self.sessKey = sessKey
 
     async def get_timeline(self):
+        global history
         time_now = int(datetime.now().timestamp())
         async with self.session.post(
                 url=f"https://core.xjtlu.edu.cn/lib/ajax/service.php?sesskey={self.sessKey}&info=core_calendar_get_action_events_by_timesort",
@@ -164,6 +167,9 @@ class CORE:
                 pass
             events = datas["data"]["events"]
 
+        if history != events:
+            os.system('termux-notification -t Quiz-Monitor -c "Quiz Discovered / Login Successful" --action "termux-open https://core.xjtlu.edu.cn"')
+
         tab = PrettyTable(['ID', 'Name', 'URL', 'DDL'])
         for event in events:
             if event["modulename"] == "quiz":
@@ -174,6 +180,7 @@ class CORE:
                 )
 
         print(tab)
+        history = events
 
 
 async def main():

@@ -1,11 +1,14 @@
 import re
 import aiohttp
+import os
+import platform
 from getpass import getpass
 from datetime import datetime
 from typing import Tuple, Union, Optional
 from aiohttp.client_exceptions import ClientError, ClientConnectorCertificateError
 from time import sleep, localtime, strftime
 from prettytable import PrettyTable
+from plyer import notification
 
 USER_AGENT = "Mozilla/5.0 (Linux; Android 12; SM-S906N Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.119 Mobile Safari/537.36"
 
@@ -21,6 +24,9 @@ SAMLRequestPattern = re.compile(r"""<meta http-equiv="refresh" content="0;URL='(
 relayStatePattern = re.compile(r'<input type="hidden" name="RelayState" value="(\S+)"/>')
 SAMLResponsePattern = re.compile(r'<input type="hidden" name="SAMLResponse" value="(\S+)"/>')
 
+history={'modifier': 'MalachiteN', 'Email': 'marisamalachite@gmail.com', 'type': 'placeholder'}
+
+OS=''
 
 class CORE:
     def __init__(self,
@@ -146,6 +152,7 @@ class CORE:
             self.sessKey = sessKey
 
     async def get_timeline(self):
+        global history, OS
         time_now = int(datetime.now().timestamp())
         async with self.session.post(
                 url=f"https://core.xjtlu.edu.cn/lib/ajax/service.php?sesskey={self.sessKey}&info=core_calendar_get_action_events_by_timesort",
@@ -164,6 +171,13 @@ class CORE:
                 pass
             events = datas["data"]["events"]
 
+        if history != events:
+            print("\a")
+            if OS == 'Termux':
+                os.system('termux-notification -t Quiz-Monitor -c "Quiz Discovered / Login Successful" --action "termux-open https://core.xjtlu.edu.cn"')
+            else:
+                notification.notify(title='Quiz-Monitor', message='Quiz Discovered / Login Successful', timeout=10)
+
         tab = PrettyTable(['ID', 'Name', 'URL', 'DDL'])
         for event in events:
             if event["modulename"] == "quiz":
@@ -174,10 +188,22 @@ class CORE:
                 )
 
         print(tab)
+        history = events
 
+
+def OS_check():
+    global OS
+    OS = platform.system()
+    if OS == 'Linux':
+        if os.getenv('TERMUX_API_VERSION') != '':
+            OS = 'Termux'
+            return
 
 async def main():
     try:
+        global OS
+        OS_check()
+        print('You are using', OS)
         async with aiohttp.ClientSession() as session:
 
             print(f"⚠️We will neither save nor upload your account password⚠️")

@@ -10,6 +10,7 @@ packages = []
 python = "^3.8"
 aiohttp = "^3.8.4"
 prettytable = "^3.9.0"
+plyer = "^2.1.0"
 
 
 [build-system]
